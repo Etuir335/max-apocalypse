@@ -26,5 +26,5 @@ dist-ssr
 .cache
 
 # исходники мода TTS (большие, сайту не нужны)
-data/
-.cache/
+/data/
+/.cache/

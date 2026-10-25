@@ -1,0 +1,67 @@
+// Монстры и боссы (колоды 23 и 24). Наборы: Z зомби, A пришельцы, R роботы, M мутанты.
+import type { MonsterDef } from '../types.ts'
+
+export const MONSTERS: MonsterDef[] = [
+  // --- Зомби ---
+  { key: 'z_horde', name: 'Орда зомби', set: 'Z', boss: true, hp: 16, dmg: 4, range: 'short', attackAll: true, images: [189126],
+    entry: [{ k: 'markersAdjacent' }], text: 'БОСС. Вход: жетон монстра на все соседние тайлы.' },
+  { key: 'z_queen', name: 'Королева зомби', set: 'Z', boss: true, hp: 18, dmg: 5, images: [189127], passive: 'queen',
+    text: 'БОСС. Пассивное: игрок, убивший любого зомби, тянет карту монстра.' },
+  { key: 'z_spitter', name: 'Зомби плевун', set: 'Z', hp: 6, dmg: 2, range: 'medium', attackAll: true, sample: 'Плевун',
+    images: [193351, 193348, 193349, 193347, 193350], text: 'Наносит урон всем игрокам в пределах дистанции.' },
+  { key: 'z_stalker', name: 'Зомби сталкер', set: 'Z', hp: 12, dmg: 5, range: 'medium', passive: 'stalker', images: [193352],
+    text: 'После нанесения урона переходит к слабейшему игроку в пределах дистанции.' },
+  { key: 'z_soldier', name: 'Зомби солдат', set: 'Z', hp: 8, dmg: 4, sample: 'Солдат', images: [193345, 193344, 193346, 193343, 193342], text: '' },
+  { key: 'z_dog', name: 'Зомби пёс', set: 'Z', hp: 5, dmg: 4, sample: 'Пёс', images: [193338, 193336, 193340, 193341, 193339, 193337], text: '' },
+  { key: 'z_walker_x', name: 'Зомби бродяга', set: 'Z', hp: 4, dmg: 2, sample: 'Бродяга', images: [193329, 193328],
+    entry: [{ k: 'drawMonster' }], text: 'Вход: вытяните ещё одну карту монстра.' },
+  { key: 'z_walker', name: 'Зомби бродяга', set: 'Z', hp: 4, dmg: 2, sample: 'Бродяга',
+    images: [193333, 193330, 193334, 193331, 193335, 193332], text: '' },
+
+  // --- Пришельцы ---
+  { key: 'a_reaper', name: 'Пришелец Жнец', set: 'A', boss: true, hp: 25, dmg: 5, images: [193725],
+    entry: [{ k: 'destroyAllAmmo' }], attack: [{ k: 'burn', n: 1 }], text: 'БОСС. Вход: уничтожает все боеприпасы в игре. Атака: сжигает 1 карту.' },
+  { key: 'a_commander', name: 'Пришелец командир', set: 'A', boss: true, hp: 22, dmg: 4, images: [193638],
+    entry: [{ k: 'healAliens' }], attack: [{ k: 'burn', n: 2 }], text: 'БОСС. Вход: полностью лечит всех пришельцев. Атака: сжигает 2 карты.' },
+  { key: 'a_soldier', name: 'Пришелец солдат', set: 'A', hp: 15, dmg: 3, range: 'long', attackAll: true,
+    images: [189012, 189013, 189016, 189017, 189015, 189014], text: 'Наносит урон всем игрокам в пределах дистанции.' },
+  { key: 'a_invader', name: 'Пришелец захватчик', set: 'A', hp: 7, dmg: 3, range: 'medium', attackAll: true,
+    images: [189020, 189018, 189021, 189022, 189023, 189019, 189024], attack: [{ k: 'burn', n: 1 }],
+    text: 'Наносит урон всем игрокам в пределах дистанции. Атака: сжигает 1 карту.' },
+  { key: 'a_drone', name: 'Пришелец аэродрон', set: 'A', hp: 10, dmg: 6, images: [189007, 189005, 189006], passive: 'noShort',
+    attack: [{ k: 'burn', n: 1 }], text: 'Атака: сжигает 1 карту. Пассивное: нельзя атаковать оружием короткой дистанции.' },
+  { key: 'a_mech', name: 'Пришелец мех', set: 'A', hp: 18, dmg: 4, images: [189010, 189009, 189008, 189011],
+    entry: [{ k: 'burn', n: 2 }], text: 'Вход: сжигает 2 карты.' },
+  { key: 'a_scientist', name: 'Пришелец учёный', set: 'A', hp: 9, dmg: 1, images: [189002, 189000, 189001, 189003, 189004],
+    passive: 'alienBoost', entry: [{ k: 'gearOrDamage', amount: 6 }],
+    text: 'Вход: сбросьте снаряжение или получите 6 урона. Пассивное: урон пришельцев +1.' },
+
+  // --- Роботы ---
+  { key: 'r_core', name: 'Лидер ядра ИИ', set: 'R', boss: true, hp: 19, dmg: 4, range: 'medium', attackAll: true, images: [193810],
+    entry: [{ k: 'discardHand' }], text: 'БОСС. Вход: сбросьте все карты с руки. Урон всем в пределах дистанции.' },
+  { key: 'r_tank', name: 'Ракетный танк', set: 'R', boss: true, hp: 22, dmg: 6, range: 'short', attackAll: true, images: [193809],
+    entry: [{ k: 'discardAllAmmo' }], text: 'БОСС. Вход: сбросьте все боеприпасы. Урон всем в пределах дистанции.' },
+  { key: 'r_omnishot', name: 'Омнишот', set: 'R', hp: 20, dmg: 3, range: 'medium', attackAll: true, onDeath: 4,
+    images: [193153, 193155, 193156, 193154], text: 'Урон всем в пределах дистанции. Когда уничтожен: наносит 4 урона.' },
+  { key: 'r_destroyer', name: 'Бот уничтожитель', set: 'R', hp: 15, dmg: 4, onDeath: 2, passive: 'idleKiller',
+    images: [193163, 193164, 193166, 193165, 193162], text: 'Когда уничтожен: 2 урона. Наносит 8 урона, если игрок не двигался за ход.' },
+  { key: 'r_phalanx', name: 'Робот «Фаланга»', set: 'R', hp: 11, dmg: 4, range: 'medium', passive: 'phalanx',
+    images: [193167, 193168, 188900, 188902, 188901], text: 'Урон, наносимый роботам, меньше на 1.' },
+  { key: 'r_scout', name: 'Робот скаут', set: 'R', hp: 12, dmg: 3, images: [193157, 193158, 193159, 193161, 193160],
+    entry: [{ k: 'markersAdjacent' }], text: 'Вход: жетон монстра на все соседние тайлы.' },
+  { key: 'r_laser', name: 'Лазерный дрон', set: 'R', hp: 10, dmg: 2, passive: 'noSneak',
+    images: [188905, 188908, 188904, 188906, 188907, 188903], text: 'Пассивное: нельзя прокрасться мимо жетонов, пока дрон перед вами.' },
+
+  // --- Мутанты ---
+  { key: 'm_mad', name: 'Бешеный мутант', set: 'M', boss: true, hp: 30, dmg: 5, range: 'short', attackAll: true, images: [193511],
+    attack: [{ k: 'poison' }], text: 'БОСС. Атака: отравление. Урон всем в пределах дистанции.' },
+  { key: 'm_dexton', name: 'Дэкстон охотник', set: 'M', boss: true, hp: 24, dmg: 4, range: 'medium', attackAll: true, images: [193512],
+    entry: [{ k: 'allDiscardGear' }], text: 'БОСС. Вход: все игроки сбрасывают снаряжение (если можно). Урон всем в пределах дистанции.' },
+  { key: 'm_exmil', name: 'Бывший военный', set: 'M', hp: 10, dmg: 4, images: [193216, 193217, 193213, 193215, 193214],
+    entry: [{ k: 'gearOrDamage', amount: 4 }], text: 'Вход: сбросьте снаряжение или получите 4 урона.' },
+  { key: 'm_marauder', name: 'Мародёр', set: 'M', hp: 7, dmg: 3, images: [193222, 193220, 193223, 193219, 193221, 193218],
+    entry: [{ k: 'findOrDamage', amount: 3 }], text: 'Вход: сбросьте карту находки или получите 3 урона.' },
+  { key: 'm_mutant', name: 'Мутант', set: 'M', hp: 8, dmg: 5, images: [193227, 193228, 193229, 193224, 193226, 193225, 193230], text: '' },
+  { key: 'm_rat', name: 'Мутант крыса', set: 'M', hp: 5, dmg: 2, images: [193231, 193235, 193232, 193237, 193234, 193236, 193233],
+    entry: [{ k: 'poison' }], text: 'Вход: отравление.' },
+]
