@@ -1,5 +1,5 @@
 // Локальная партия «за одним телефоном». В фазе 4 рядом появится сетевая (Firebase) с тем же интерфейсом.
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { tryReduce } from '../game/engine.ts'
 import type { Action, GameState } from '../game/types.ts'
 
@@ -26,7 +26,14 @@ function save(s: GameState | null) {
     if (s) localStorage.setItem(KEY, JSON.stringify(s))
     else localStorage.removeItem(KEY)
   } catch {
-    // хранилище может быть недоступно — партия просто не сохранится
+    // не записалось (нет места и т. п.) — убираем старое сохранение, чтобы после перезагрузки
+    // не вернуться в давно прошедшую партию
+    try {
+      localStorage.removeItem(KEY)
+      if (s) localStorage.setItem(KEY, JSON.stringify(s))
+    } catch {
+      // хранилище недоступно — партия просто не сохранится
+    }
   }
 }
 
@@ -34,17 +41,19 @@ export const hasSavedGame = () => !!load()
 
 export function useLocalGame(): GameStore {
   const [state, setState] = useState<GameState | null>(load)
-  const dispatch = useCallback(
-    (a: Action) => {
-      const r = tryReduce(state, a)
-      if (r.error) return r.error
-      setState(r.state)
-      save(r.state)
-      return undefined
-    },
-    [state],
-  )
+  // текущая партия; действия всегда применяются к ней, а не к снимку из прошлой отрисовки
+  // (иначе два быстрых действия подряд — бот и клик — откатывали партию назад)
+  const cur = useRef(state)
+  const dispatch = useCallback((a: Action) => {
+    const r = tryReduce(cur.current, a)
+    if (r.error) return r.error
+    cur.current = r.state
+    setState(r.state)
+    save(r.state)
+    return undefined
+  }, [])
   const reset = useCallback(() => {
+    cur.current = null
     setState(null)
     save(null)
   }, [])
