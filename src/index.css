@@ -1,0 +1,1695 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: #111;
+  color: #eee;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* Фон-картинка на обёртке, без background-attachment: fixed (не работает в Telegram WebView) */
+.page {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+.overlay {
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.72);
+  padding: 12px 12px 40px;
+}
+
+.top h1 {
+  margin: 4px 0;
+  font-size: 22px;
+}
+
+.top p {
+  margin: 0 0 8px;
+  opacity: 0.8;
+}
+
+.deck-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.deck-nav a {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #f3c46b;
+  text-decoration: none;
+}
+
+.deck {
+  margin-top: 20px;
+}
+
+.deck h2 {
+  font-size: 17px;
+  margin: 0 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(243, 196, 107, 0.5);
+  color: #f3c46b;
+}
+
+.deck-name {
+  color: #fff;
+}
+
+.count {
+  color: #bbb;
+  font-weight: normal;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  text-align: center;
+}
+
+.card img {
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
+  background: #222;
+  aspect-ratio: 5 / 7;
+  object-fit: contain;
+}
+
+.card-id {
+  font-size: 10px;
+  opacity: 0.75;
+  word-break: break-all;
+}
+
+.card-name {
+  font-size: 11px;
+}
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  gap: 10px;
+}
+
+.viewer img {
+  max-width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.viewer-text {
+  text-align: center;
+  font-size: 13px;
+}
+
+.viewer-desc {
+  opacity: 0.85;
+  white-space: pre-wrap;
+}
+
+.flip {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: #f3c46b;
+  color: #111;
+  font-weight: 600;
+}
+
+.hint {
+  opacity: 0.5;
+  margin-top: 6px;
+  font-size: 11px;
+}
+
+.error {
+  color: #ff8080;
+}
+
+.loading {
+  opacity: 0.7;
+}
+
+/* ===================== Игра (фаза 3) ===================== */
+
+:root {
+  --bg: #121212;
+  --panel: #1d1c1a;
+  --panel2: #272522;
+  --text: #eee;
+  --muted: #a8a29a;
+  --accent: #f3c46b;
+  --danger: #ff7a6b;
+  --ok: #7bd67b;
+}
+
+.btn {
+  display: inline-block;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid #4a4640;
+  border-radius: 8px;
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+}
+.btn:disabled {
+  opacity: 0.45;
+}
+.btn.small {
+  min-height: 32px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1a1a1a;
+  font-weight: 600;
+}
+.btn.accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.btn.wide {
+  display: block;
+  width: 100%;
+  margin: 6px 0;
+  text-align: left;
+}
+.btn.primary.wide {
+  text-align: center;
+}
+.btn.color-red {
+  border-left: 6px solid #d9473a;
+}
+.btn.color-green {
+  border-left: 6px solid #4fb24f;
+}
+.btn.color-blue {
+  border-left: 6px solid #3c8ee0;
+}
+
+.muted {
+  color: var(--muted);
+}
+.bad {
+  color: var(--danger);
+}
+
+/* --- меню --- */
+.menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+}
+.title {
+  font-size: 30px;
+  color: var(--accent);
+  margin: 0;
+  text-shadow: 0 2px 8px #000;
+}
+.subtitle {
+  margin: 4px 0 28px;
+  color: var(--muted);
+}
+.menu-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+}
+
+/* --- настройка --- */
+.setup h1 {
+  margin: 10px 0;
+}
+.setup h2 {
+  font-size: 17px;
+  color: var(--accent);
+  margin: 18px 0 8px;
+}
+.mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mission {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 10px;
+  border: 1px solid #3b3833;
+  border-radius: 8px;
+  background: rgba(30, 28, 25, 0.9);
+  color: var(--text);
+  text-align: left;
+}
+.mission span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.mission.active {
+  border-color: var(--accent);
+  background: rgba(70, 55, 25, 0.9);
+}
+.mission-text {
+  font-size: 14px;
+  color: #ddd;
+}
+.seat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 8px;
+  background: rgba(30, 28, 25, 0.9);
+}
+.seat input,
+.seat select {
+  flex: 1 1 120px;
+  min-height: 38px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #4a4640;
+  background: #111;
+  color: var(--text);
+  font-size: 15px;
+}
+.seat-ability {
+  flex-basis: 100%;
+  font-size: 12px;
+  color: var(--muted);
+}
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 10px 0;
+}
+.check input {
+  width: 20px;
+  height: 20px;
+}
+
+/* --- экран игры --- */
+.game {
+  min-height: 100vh;
+  background: var(--bg);
+  padding-bottom: 150px;
+}
+.ghead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 8px;
+  background: #0c0c0c;
+  border-bottom: 1px solid #333;
+}
+.ginfo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 13px;
+}
+.ginfo b {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ginfo i {
+  font-style: normal;
+  font-weight: 600;
+}
+
+.board-scroll {
+  height: 42vh;
+  overflow: auto;
+  background-color: #1a1916;
+  background-size: 512px;
+  border-bottom: 1px solid #333;
+  -webkit-overflow-scrolling: touch;
+}
+.board {
+  position: relative;
+  margin: 8px;
+}
+.tile {
+  position: absolute;
+  padding: 0;
+  border: 1px solid #000;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #2a2824;
+  color: #fff;
+}
+.tile img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tile.closed img {
+  filter: brightness(0.6);
+}
+.tile.hl {
+  outline: 3px solid var(--accent);
+  z-index: 2;
+}
+.tile.act {
+  box-shadow: 0 0 0 2px #fff inset;
+}
+.tname {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1px 2px;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 9px;
+  line-height: 1.1;
+  text-align: center;
+}
+.tname:empty {
+  display: none;
+}
+.tspawn,
+.tmark,
+.tobj,
+.tdrop {
+  position: absolute;
+  padding: 0 4px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(0, 0, 0, 0.75);
+}
+.tspawn {
+  top: 2px;
+  left: 2px;
+}
+.tmark {
+  top: 2px;
+  right: 2px;
+  color: var(--danger);
+}
+.tobj {
+  top: 18px;
+  left: 2px;
+  color: var(--accent);
+}
+.tdrop {
+  top: 18px;
+  right: 2px;
+}
+.tokens {
+  position: absolute;
+  left: 2px;
+  bottom: 14px;
+  display: flex;
+  gap: 2px;
+}
+.tokens i {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 14px;
+  text-align: center;
+  color: #000;
+  font-weight: 700;
+}
+
+.last-log {
+  padding: 6px 10px;
+  font-size: 13px;
+  color: var(--muted);
+  background: #161513;
+  min-height: 28px;
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px 0;
+  overflow-x: auto;
+}
+.tab {
+  flex: 0 0 auto;
+  padding: 6px 10px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  border-radius: 6px 6px 0 0;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 14px;
+}
+.tab.on {
+  background: var(--panel2);
+  color: var(--text);
+}
+.tab.dead {
+  text-decoration: line-through;
+}
+
+.ppanel {
+  margin: 0 8px;
+  padding: 8px 10px;
+  border-radius: 0 8px 8px 8px;
+  background: var(--panel2);
+}
+.ppanel.dead {
+  opacity: 0.6;
+}
+.ppanel h4 {
+  margin: 10px 0 4px;
+  font-size: 13px;
+  color: var(--accent);
+}
+.phead {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.pdot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.row.wrap {
+  flex-wrap: wrap;
+  overflow: visible;
+}
+
+.cbtn {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: none;
+}
+.cbtn.selected {
+  border-color: var(--accent);
+}
+.cbtn:disabled {
+  cursor: default;
+}
+.cimg {
+  display: block;
+  width: 78px;
+  aspect-ratio: 486 / 669;
+  border-radius: 5px;
+  object-fit: cover;
+  background: #333;
+}
+.cimg.small {
+  width: 60px;
+}
+.cbadge {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  padding: 1px 2px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  font-size: 11px;
+  color: #fff;
+  text-align: center;
+}
+
+.actionbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 6;
+  padding: 6px 8px calc(6px + env(safe-area-inset-bottom));
+  background: #0c0c0c;
+  border-top: 1px solid #333;
+}
+.acts {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.abtns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.abtns .btn {
+  flex: 1 1 auto;
+  font-size: 14px;
+  padding: 6px 8px;
+}
+.tip {
+  margin: 4px 0 0;
+  font-size: 11px;
+}
+
+/* --- панели снизу --- */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: flex-end;
+}
+.sheet,
+.wizard {
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border-radius: 14px 14px 0 0;
+  border-top: 1px solid #444;
+}
+.wizard {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 25;
+  max-height: 60vh;
+}
+.wizard.slim {
+  max-height: 32vh;
+}
+.sheet-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #333;
+}
+.sheet-body {
+  padding: 10px 12px calc(16px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+}
+.sheet-body .btn.small {
+  margin: 3px;
+}
+.big {
+  display: block;
+  width: min(70vw, 300px);
+  margin: 0 auto 8px;
+  border-radius: 10px;
+}
+.handoff {
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #3a2f17;
+  color: var(--accent);
+  font-weight: 600;
+}
+.log {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+.log li {
+  margin-bottom: 3px;
+}
+
+.toast {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: 170px;
+  z-index: 40;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #5a1f1a;
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.gameover {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.88);
+  text-align: center;
+}
+.gameover h1 {
+  color: var(--accent);
+  font-size: 36px;
+}
+.setup-phase .ppanel {
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+/* --- крупные карты, увеличение, ширина экрана (правки после проверки) --- */
+.cimg {
+  width: 100px;
+}
+.cimg.small {
+  width: 76px;
+}
+.cimg.large {
+  width: min(42vw, 230px);
+}
+.cface {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.czoom {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 15px;
+  line-height: 30px;
+  cursor: pointer;
+}
+.cbtn.selected .cface img {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+.zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.92);
+}
+.zoom img {
+  max-width: 100%;
+  max-height: 88vh;
+  border-radius: 12px;
+}
+.big {
+  cursor: zoom-in;
+}
+
+/* На широком экране — колонка как на телефоне */
+.game,
+.overlay.setup,
+.overlay.menu {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.actionbar,
+.sheet,
+.wizard {
+  max-width: 640px;
+  margin: 0 auto;
+}
+.sheet-backdrop {
+  justify-content: center;
+}
+
+/* --- выбор персонажа --- */
+.hero-pick {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #3b3833;
+  border-radius: 8px;
+  background: rgba(30, 28, 25, 0.95);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.hero-pick img {
+  width: 64px;
+  border-radius: 6px;
+  flex: 0 0 auto;
+}
+.hero-pick .hp-line {
+  font-size: 12px;
+  color: var(--muted);
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.hero-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border: 2px solid #3b3833;
+  border-radius: 10px;
+  background: var(--panel2);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.hero-card.on {
+  border-color: var(--accent);
+}
+.hero-card:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.hero-card .portraits {
+  display: flex;
+  gap: 4px;
+}
+.hero-card .portraits .cbtn {
+  flex: 1;
+  min-width: 0;
+}
+.hero-card .portraits img {
+  display: block;
+  width: 100%;
+  border-radius: 6px;
+}
+.hero-card small {
+  font-size: 11px;
+  color: var(--muted);
+}
+.taken {
+  font-size: 11px;
+  color: var(--danger);
+}
+
+/* --- карта с перетаскиванием и масштабом --- */
+.board-vp {
+  position: relative;
+  height: 46vh;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background-color: #1a1916;
+  background-size: 512px;
+  border-bottom: 1px solid #333;
+  cursor: grab;
+}
+.board-vp.tall {
+  height: 76vh;
+}
+.board-vp .board {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  transform-origin: 0 0;
+  /* без will-change: иначе браузер растягивает старую мелкую картинку и при приближении «мылит» */
+}
+.board-vp .tile {
+  border: 2px solid #000;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+.board-vp .tile img {
+  pointer-events: none;
+}
+.board-vp .tile.hl {
+  outline: 5px solid var(--accent);
+}
+.board-vp .tile.act {
+  box-shadow: 0 0 0 4px #fff inset, 0 3px 8px rgba(0, 0, 0, 0.6);
+}
+.board-vp .tname {
+  font-size: 15px;
+  padding: 2px 3px;
+}
+.board-vp .tspawn,
+.board-vp .tmark,
+.board-vp .tobj,
+.board-vp .tdrop {
+  font-size: 18px;
+  padding: 1px 6px;
+}
+.board-vp .tobj,
+.board-vp .tdrop {
+  top: 32px;
+}
+.board-vp .tokens {
+  bottom: 24px;
+  left: 4px;
+  gap: 3px;
+}
+.board-vp .tokens i {
+  width: 28px;
+  height: 28px;
+  border-width: 2px;
+  font-size: 16px;
+  line-height: 24px;
+}
+.board-ctrl {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.board-ctrl .btn {
+  width: 38px;
+  min-height: 38px;
+  padding: 0;
+  font-size: 18px;
+  background: rgba(20, 20, 20, 0.85);
+}
+
+/* --- тайлы: картинка целиком, жетоны и фигурки (правка) --- */
+.board-vp .tile img {
+  object-fit: contain;
+}
+.board-vp .tile .tmarkers {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.board-vp .tile .tmarkers img,
+.board-vp .tile .tobj img,
+.board-vp .tile .tokens img {
+  position: static;
+  inset: auto;
+}
+.board-vp .tile .tmarkers img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid #000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+.board-vp .tile .tobj {
+  top: auto;
+  bottom: 4px;
+  right: 4px;
+  left: auto;
+  padding: 0;
+  background: none;
+  display: flex;
+  align-items: center;
+}
+.board-vp .tile .tobj img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+.board-vp .tile .tobj b {
+  margin-left: -10px;
+  padding: 0 4px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.8);
+  color: var(--accent);
+  font-size: 16px;
+}
+.board-vp .tile .tokens {
+  left: 4px;
+  bottom: 4px;
+  gap: 2px;
+}
+.board-vp .tile .tokens img {
+  width: 34px;
+  height: 44px;
+  object-fit: cover;
+  object-position: top;
+  border: 3px solid;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+/* --- планшет игрока --- */
+.board-panel {
+  border-radius: 0 8px 8px 8px;
+}
+.pboard {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3675 / 2175;
+  margin-top: 6px;
+  background-size: 100% 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.slot {
+  position: absolute;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+.slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+.slot.dim img {
+  filter: grayscale(1) brightness(0.5);
+}
+.sbadge {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  padding: 0 4px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-size: clamp(9px, 1.8vw, 13px);
+  white-space: nowrap;
+}
+.pmonsters {
+  position: absolute;
+  display: flex;
+  gap: 1%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.pmonsters .slot {
+  position: relative;
+  flex: 0 0 auto;
+  height: 100%;
+  aspect-ratio: 486 / 669;
+}
+.hexmark,
+.hungermark {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hexmark {
+  width: 4.6%;
+  aspect-ratio: 1;
+  border: 3px solid #ffd54a;
+  box-shadow: 0 0 10px 3px rgba(255, 213, 74, 0.8);
+}
+.hungermark {
+  width: 2.9%;
+  aspect-ratio: 1;
+  border: 3px solid #4fd1ff;
+  box-shadow: 0 0 8px 2px rgba(79, 209, 255, 0.8);
+}
+.ppoison {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+}
+.ppoison img {
+  width: clamp(18px, 4vw, 28px);
+  border-radius: 50%;
+}
+.ppoison b {
+  margin-left: 2px;
+  padding: 0 3px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #8f8;
+  font-size: 12px;
+}
+.row.hand .cimg {
+  width: min(28vw, 130px);
+}
+
+/* --- планшет находок --- */
+.findboard {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2032 / 788;
+  background-size: 100% 100%;
+  border-radius: 8px;
+}
+.fdeck {
+  position: absolute;
+  top: 6%;
+  width: 29.6%;
+  height: 88%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 6%;
+  border: 3px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
+}
+.fdeck:not(:disabled) {
+  border-color: #fff;
+  cursor: pointer;
+}
+.fdeck.off {
+  background: rgba(0, 0, 0, 0.65);
+}
+.fdeck b {
+  font-size: 26px;
+}
+.fdeck span {
+  font-size: 13px;
+}
+
+/* --- правки: рамка голода по клетке, рука сеткой без прокрутки --- */
+.hungermark {
+  width: 2.45%;
+  height: 4.3%;
+  aspect-ratio: auto;
+  border-radius: 3px;
+  border-width: 2px;
+}
+.row.hand {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  overflow: visible;
+}
+.row.hand .cbtn,
+.row.hand .cface {
+  width: 100%;
+}
+.row.hand .cimg {
+  width: 100%;
+}
+
+/* ===================== Раскладка для ПК: три колонки ===================== */
+.g-right {
+  display: none;
+}
+.dpanel {
+  padding: 10px 12px;
+  border: 1px solid #34312c;
+  border-radius: 10px;
+  background: var(--panel);
+}
+.dpanel h3 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.small {
+  font-size: 13px;
+}
+.dpanel ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+.squad {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 6px;
+  border: 1px solid #2f2c28;
+  border-radius: 8px;
+  background: var(--panel2);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.squad.dead {
+  opacity: 0.5;
+}
+.squad img {
+  width: 40px;
+  height: 52px;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid;
+  border-radius: 6px;
+}
+
+@media (min-width: 1100px) {
+  .mob-only {
+    display: none !important;
+  }
+  .game {
+    max-width: none;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0;
+    overflow: hidden;
+  }
+  .game-grid {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(400px, 31%) 1fr minmax(320px, 23%);
+    grid-template-areas: 'left center right';
+    gap: 12px;
+    padding: 12px;
+  }
+  .g-left {
+    grid-area: left;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .g-center {
+    grid-area: center;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #34312c;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--panel);
+  }
+  .g-right {
+    grid-area: right;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+  }
+  .dpanel.grow {
+    flex: 1 0 220px;
+    overflow-y: auto;
+  }
+  .board-vp,
+  .board-vp.tall {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    border-bottom: 1px solid #333;
+  }
+  .actionbar {
+    position: static;
+    max-width: none;
+    margin: 0;
+    padding: 8px 10px 10px;
+    border-top: 1px solid #333;
+  }
+  .abtns .btn {
+    font-size: 15px;
+    padding: 8px 10px;
+  }
+  .g-left .tabs {
+    padding: 0;
+  }
+  .g-left .ppanel {
+    margin: 0;
+  }
+  .ghead {
+    padding: 8px 14px;
+  }
+  .toast {
+    left: 50%;
+    right: auto;
+    bottom: 120px;
+    transform: translateX(-50%);
+    max-width: 520px;
+  }
+}
+
+/* --- чёткий текст карты под картинкой --- */
+.cbtn.captioned .cface {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-radius: 6px;
+  background: #151412;
+  overflow: hidden;
+}
+.cbtn.captioned .cimg {
+  border-radius: 6px 6px 0 0;
+}
+.ccap {
+  display: block;
+  padding: 4px 5px 6px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: #e9e4da;
+  text-align: left;
+}
+.ccap b {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--accent);
+  font-size: 1.05em;
+}
+.row.wrap .cbtn.captioned {
+  align-self: stretch;
+}
+
+/* --- планшет находок: число сверху, подпись снизу (не налезают на значок) --- */
+.fdeck {
+  justify-content: space-between;
+  padding: 3% 0 4%;
+}
+.fdeck b {
+  min-width: 1.8em;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.75);
+  font-size: clamp(16px, 2.6vw, 24px);
+  line-height: 1.3;
+}
+.fdeck span {
+  padding: 0 6px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ===================== Панели на ПК (перетаскивание, размеры) ===================== */
+@media (min-width: 1100px) {
+  .dl {
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    padding: 10px;
+  }
+  .dl-col {
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 2px 6px;
+  }
+  .dl-center {
+    min-height: 0;
+    display: flex;
+  }
+  .dl-center .g-center {
+    flex: 1;
+  }
+  .dl-split {
+    cursor: col-resize;
+    position: relative;
+  }
+  .dl-split::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 3px;
+    width: 2px;
+    border-radius: 2px;
+    background: transparent;
+  }
+  .dl-split:hover::after {
+    background: var(--accent);
+  }
+  .dp-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: -2px 0 8px;
+    cursor: grab;
+  }
+  .dp-head h3 {
+    flex: 1;
+    margin: 0;
+  }
+  .grip {
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .dp-btn {
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .dp-btn:hover {
+    color: var(--text);
+  }
+  .dp-body {
+    overflow: auto;
+  }
+  .dp-resize {
+    height: 10px;
+    margin: 4px -12px -10px;
+    border-radius: 0 0 10px 10px;
+    cursor: ns-resize;
+    background: linear-gradient(to bottom, transparent 4px, #3a3631 4px, #3a3631 6px, transparent 6px);
+    background-size: 40px 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  .dp-resize:hover {
+    background-color: rgba(243, 196, 107, 0.15);
+  }
+  .dl-dropzone {
+    flex: 1 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed #34312c;
+    border-radius: 10px;
+    font-size: 12px;
+    opacity: 0.6;
+  }
+  .dl-restore {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    font-size: 12px;
+  }
+  .dpanel .tabs {
+    padding: 0;
+  }
+  .dpanel .ppanel {
+    margin: 0;
+    padding: 0;
+    background: none;
+  }
+  .dpanel.grow {
+    flex: none;
+  }
+}
+
+/* --- предпросмотр карты при наведении (ПК) --- */
+.hoverprev {
+  position: fixed;
+  top: 50%;
+  z-index: 90;
+  width: min(340px, 30vw);
+  transform: translateY(-50%);
+  pointer-events: none;
+  border-radius: 12px;
+  background: #121110;
+  border: 1px solid #4a4640;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+.hoverprev.at-right {
+  right: 24px;
+}
+.hoverprev.at-left {
+  left: 24px;
+}
+.hoverprev img {
+  display: block;
+  width: 100%;
+}
+.hp-text {
+  padding: 10px 12px 12px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+.hp-text b {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent);
+  font-size: 17px;
+}
+
+@media (min-width: 1100px) {
+  .dl-dropzone {
+    display: none;
+  }
+  .dl.dragging .dl-dropzone {
+    display: flex;
+  }
+  /* Рука на ПК: компактно, только название; полный текст — в предпросмотре */
+  .dl .row.hand {
+    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  }
+  .dl .row.hand .ccap-text {
+    display: none;
+  }
+  .dl .row.hand .ccap {
+    text-align: center;
+  }
+}
+
+/* --- тёмные тонкие полосы прокрутки --- */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #4a453e transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #4a453e;
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #6a6358;
+}
+*::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* --- вкладки с фигурками --- */
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tab img {
+  width: 22px;
+  height: 28px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 4px;
+}
+.tab small {
+  color: var(--muted);
+}
+@media (min-width: 1100px) {
+  .dpanel .phead {
+    display: none;
+  }
+}
+
+/* --- жетоны действий --- */
+.pips {
+  display: inline-flex;
+  gap: 4px;
+  vertical-align: middle;
+  margin-left: 6px;
+}
+.pips i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #ffd54a;
+}
+.pips i.on {
+  background: #ffd54a;
+  box-shadow: 0 0 6px rgba(255, 213, 74, 0.7);
+}
+
+/* --- журнал: без номеров, свежая запись выделена --- */
+ul.log {
+  list-style: none;
+  padding-left: 0;
+}
+ul.log li {
+  padding: 3px 0;
+  border-bottom: 1px solid #2a2724;
+}
+ul.log li:first-child {
+  color: var(--accent);
+}
+
+/* --- развернуть планшет --- */
+.pboard-wrap {
+  position: relative;
+}
+.pb-expand {
+  position: absolute;
+  top: 10px;
+  right: 4px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #5a544b;
+  border-radius: 8px;
+  background: rgba(15, 15, 15, 0.85);
+  color: #fff;
+  font-size: 18px;
+  line-height: 30px;
+  cursor: pointer;
+}
+.pb-expand:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.pb-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2vh 1vw;
+  background: rgba(0, 0, 0, 0.85);
+  overflow-y: auto;
+}
+.pb-big {
+  width: min(96vw, calc((88vh - 60px) * 3675 / 2175), 1700px);
+  min-width: min(96vw, 360px);
+  padding: 10px 12px 14px;
+  border: 1px solid #4a4640;
+  border-radius: 12px;
+  background: var(--panel);
+}
+.pb-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.pb-head b {
+  flex: 1;
+  font-size: 17px;
+}
+.pb-big .sbadge {
+  font-size: clamp(12px, 1.2vw, 18px);
+}
+.pb-big .row.hand {
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+}
+
+/* --- жетоны монстров: середина левого края тайла (не на номере и не на названии) --- */
+.board-vp .tile .tmarkers {
+  top: 30%;
+  left: 6px;
+  right: auto;
+  flex-direction: row;
+  gap: 3px;
+}
+.board-vp .tile .tmarkers img {
+  width: 34px;
+  height: 34px;
+}
+
+/* отмеченные тайлы при выборе нескольких */
+.board-vp .tile.sel {
+  outline: 6px solid #4fd1ff;
+  z-index: 3;
+}
+
+/* подпись не шире картинки: текст переносится под картой (окна выбора, замена карт) */
+.row.wrap .cbtn.captioned .cface {
+  width: min-content;
+}
+.row.wrap .cbtn.captioned .ccap {
+  min-width: 100%;
+}
+
+/* --- бот думает --- */
+.botline {
+  margin-bottom: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: #1f2a33;
+  color: #9fd3ff;
+  font-size: 13px;
+}
+
+.roomcode {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.bigcode {
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: #3a2f17;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+}

@@ -1,0 +1,30 @@
+rules_version = '2';
+// Правила доступа для Firestore. Вставить в консоли Firebase: Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /coop/{code} {
+      // комнату читают все вошедшие (анонимный вход)
+      allow read: if request.auth != null;
+      // создать комнату можно только «на себя» как хоста
+      allow create: if request.auth != null && request.resource.data.host == request.auth.uid;
+      // менять комнату (миссия, боты, состояние партии) и удалять — только хост
+      allow update, delete: if request.auth != null && resource.data.host == request.auth.uid;
+
+      // участники: каждый пишет только свою карточку
+      match /members/{uid} {
+        allow read: if request.auth != null;
+        allow write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // очередь действий: отправлять — только от своего имени; разбирать — хост
+      match /actions/{id} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+        allow update, delete: if request.auth != null && (
+          resource.data.uid == request.auth.uid ||
+          get(/databases/$(database)/documents/coop/$(code)).data.host == request.auth.uid
+        );
+      }
+    }
+  }
+}
