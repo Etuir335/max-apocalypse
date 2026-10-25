@@ -6,8 +6,8 @@
 - Фаза 1 — сделана.
 - Фаза 2 — сделана (пользователь дал «ок»).
 - Фаза 3 — сделана (UI, ПК-панели, боты MCTS).
-- Фаза 4 — код написан, не проверен вживую: нужен проект Firebase (инструкция ниже, раздел «Фаза 4»).
-- Следующая: фаза 5 — Telegram, GitHub Pages, бот.
+- Фаза 4 — сделана (Firebase настроен и проверен).
+- Фаза 5 — сделана: сайт https://etuir335.github.io/max-apocalypse/, бот @MaxApocalypseGameBot. Ждёт проверки пользователем в Telegram на телефоне.
 
 ## Фаза 3 — интерфейс (src/ui/, src/App.tsx)
 - `App.tsx` — экраны: меню (Продолжить / Новая игра / Галерея), настройка, игра. Партия сохраняется в localStorage (`ui/store.ts`, ключ `ma-local-game`) — в фазе 4 рядом встанет сетевой store с тем же интерфейсом `GameStore {state, dispatch, reset}`.
@@ -145,12 +145,16 @@
 - Ограничения: если хост закрыл приложение, партия ждёт его возвращения (передачи хоста пока нет). Старые комнаты не удаляются.
 - СДЕЛАНО (Claude в браузере): проект Firebase `max-apocalypse` (без Gemini и Analytics), Anonymous auth включён, Firestore Standard в `eur3` (production mode), правила из `firestore.rules` опубликованы, веб-приложение `max-apocalypse-web` зарегистрировано, конфиг в `.env.local` и `.env.production`. Проверка `node --env-file=.env.local scripts/net-check.ts` — два анонимных игрока, комната, ход, запреты правил — всё OK.
 
-## Фаза 5 — Telegram и публикация (идёт)
+## Фаза 5 — Telegram и публикация (сделана)
 - `src/telegram.ts` — Mini App: ready/expand, цвета шапки, запрет закрытия свайпом (≥7.7), кнопка «Назад» (`useTelegramBack`, в App: не в меню → меню), имя игрока из Telegram, код комнаты из `startapp` (сразу открывает «Игру по сети» с вписанным кодом), `shareInvite` — окно выбора чата со ссылкой `VITE_TG_APP_URL?startapp=КОД` (вне Telegram — в буфер). Скрипт telegram-web-app.js подключён в index.html.
 - `.github/workflows/deploy.yml` — push в main → npm ci, npm test, build, публикация на GitHub Pages. `.env.production` — открытый конфиг Firebase + `VITE_TG_APP_URL` (заполнить после бота). `data/` и `.cache/` в .gitignore.
-- Ставятся git и GitHub CLI (winget). Нужен вход пользователя: GitHub (gh auth login) и Telegram Web (QR).
+- Репозиторий: https://github.com/Etuir335/max-apocalypse (публичный, ветка main; git/gh установлены, gh вошёл с правом `workflow`). Обновить сайт = закоммитить и `git push` → Actions сам соберёт и выложит за ~1–2 мин. git на этом ПК: если команда не находится, обновить PATH или открыть новый терминал.
+- Pages: Source = GitHub Actions, адрес https://etuir335.github.io/max-apocalypse/ (проверено: меню, вход в Firebase, создание комнаты).
+- Бот @MaxApocalypseGameBot (BotFather): Main Mini App = адрес сайта, кнопка меню «Играть» = адрес сайта. Своего сервера у бота нет, на /start не отвечает (не нужно). Приглашения: `https://t.me/MaxApocalypseGameBot?startapp=КОД` (`VITE_TG_APP_URL` в .env.production).
+- Грабли: правило `data/` в .gitignore скрывало и `src/game/data/` — теперь `/data/`.
+- Telegram Web долго кэширует старые данные бота (кнопка «Играть» появилась не сразу) — в приложении на телефоне обновляется само.
 
-### Что сделать пользователю (один раз)
+### Firebase — как настраивалось (для справки)
 1. https://console.firebase.google.com → «Создать проект» (Google Analytics можно выключить).
 2. Build → Authentication → Get started → Sign-in method → Anonymous → Enable.
 3. Build → Firestore Database → Create database → регион (например, eur3) → «Production mode».
@@ -159,5 +163,5 @@
 6. Перезапустить `npm.cmd run dev`.
 
 ## Что дальше
-- Поправки UI по отзыву пользователя после проверки в браузере.
-- Фаза 4: Firebase Firestore, комната coop/<код>; хост прогоняет действия через reduce и пишет состояние, остальные отправляют действия. Понадобятся от пользователя: проект Firebase и его конфиг.
+- Проверка пользователем в Telegram с телефона (вдвоём по ссылке-приглашению), поправки по отзыву.
+- Не решено: ослаблять ли Убежище/броню; передача хоста; чистка старых комнат.
