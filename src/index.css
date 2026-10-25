@@ -2,6 +2,13 @@
   box-sizing: border-box;
 }
 
+* {
+  /* без синей вспышки Android при нажатии — у кнопок своя реакция */
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus:not(:focus-visible) {
+  outline: none;
+}
 html {
   /* не даём мобильному браузеру самому раздувать шрифт */
   -webkit-text-size-adjust: 100%;
@@ -1748,6 +1755,14 @@ ul.log li:first-child {
 .abtns .btn.accent {
   border-color: var(--accent);
   color: var(--accent);
+}
+/* «Конец хода», когда действия кончились, — металл с золотым отливом */
+.abtns .btn.primary {
+  border-color: var(--accent);
+  background:
+    linear-gradient(rgba(240, 180, 70, 0.55), rgba(160, 100, 20, 0.55)),
+    url('/assets/ui/bg-button.webp') center / cover;
+  color: #fff;
 }
 @media (hover: hover) {
   .abtns .btn:hover:not(:disabled) {
