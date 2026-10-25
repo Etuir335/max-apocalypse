@@ -348,7 +348,7 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
       {pending && s.phase === 'play' && !s.players[pending.seat].bot && mine(pending.seat) && <PendingSheet key={`${pending.seat}-${pending.kind}-${s.pendings.length}-${s.log.length}`} s={s} act={act} />}
 
       {(s.phase === 'won' || s.phase === 'lost') && (
-        <div className="gameover">
+        <div className={`gameover ${s.phase}`}>
           <h1>{s.phase === 'won' ? 'Победа!' : 'Поражение'}</h1>
           <p>{s.result}</p>
           <button className="btn primary" onClick={onMenu}>

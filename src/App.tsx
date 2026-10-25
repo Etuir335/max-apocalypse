@@ -44,7 +44,9 @@ export default function App() {
       {(screen === 'menu' || (screen === 'game' && !store.state)) && (
         <div className="page" style={{ backgroundImage: `url(${assetUrl('assets/ui/bg-menu.png')})` }}>
           <div className="overlay menu">
-            <h1 className="title">Максимум Апокалипсис</h1>
+            <h1 className="title">
+              <img className="logo" src={assetUrl('assets/ui/logo.webp')} alt="Максимум Апокалипсис" />
+            </h1>
             <p className="subtitle">кооперативное выживание</p>
             <div className="menu-buttons">
               {store.state && (
