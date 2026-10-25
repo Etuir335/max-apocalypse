@@ -2,6 +2,11 @@
   box-sizing: border-box;
 }
 
+html {
+  /* не даём мобильному браузеру самому раздувать шрифт */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 html,
 body {
   margin: 0;
@@ -1147,7 +1152,9 @@ button {
 }
 .row.hand {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* minmax(0, …): длинное слово в подписи не растягивает колонку */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
   gap: 6px;
   overflow: visible;
 }
@@ -1321,6 +1328,28 @@ button {
 }
 .row.wrap .cbtn.captioned {
   align-self: stretch;
+}
+.ccap {
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+/* телефон: в руке — название и 3 строки текста, полностью — по 🔍 */
+@media (max-width: 1099px) {
+  .row.hand .ccap {
+    padding: 3px 4px 4px;
+    font-size: 11px;
+  }
+  .row.hand .ccap b {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .row.hand .ccap-text {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+  }
 }
 
 /* --- планшет находок: число сверху, подпись снизу (не налезают на значок) --- */
