@@ -151,12 +151,13 @@ export function evaluate(s: GameState): number {
   }, 0) / alive.length
   const safe = alive.reduce((n, p) => n + safety(s, p), 0) / all.length
   const bulk = 1 / (1 + alive.reduce((n, p) => n + monsterBulk(p), 0) / 20)
-  const deck = alive.reduce((n, p) => n + Math.min(1, p.deck.length / 14) ** 2, 0) / alive.length
+  // колода — это жизнь: каждая лишняя взятая карта приближает гибель, а не только последние 14
+  const deck = alive.reduce((n, p) => n + 0.5 * Math.min(1, p.deck.length / 25) + 0.5 * Math.min(1, p.deck.length / 14) ** 2, 0) / alive.length
   const markers = 1 - markersOnBoard(s) / 30
   const armed = alive.reduce((n, p) => n + Math.min(1, p.equip.filter((e) => cardDef(e.id).gear?.action && (e.ammo > 0 || (cardDef(e.id).gear?.ammo === undefined && cardDef(e.id).gear?.fuel === undefined))).length / 2), 0) / alive.length
   // Выживание важнее прогресса: мёртвый отряд миссию не выполнит
-  const score = 0.3 * missionScore(s) + 0.17 * (alive.length / all.length) + 0.11 * hp + 0.13 * safe + 0.07 * bulk +
-    0.13 * hunger + 0.02 * markers + 0.05 * deck + 0.02 * armed
+  const score = 0.29 * missionScore(s) + 0.16 * (alive.length / all.length) + 0.11 * hp + 0.13 * safe + 0.07 * bulk +
+    0.13 * hunger + 0.02 * markers + 0.07 * deck + 0.02 * armed
   return Math.max(0.001, Math.min(0.999, score))
 }
 

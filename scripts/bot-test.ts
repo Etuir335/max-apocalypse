@@ -57,17 +57,22 @@ for (const mode of modes) {
   let dec = 0
   const t0 = Date.now()
   const reasons: string[] = []
+  let revealedSum = 0
+  let starved = 0
   for (let g = 0; g < games; g++) {
-    const r = play(mode, 1000 + g)
+    const r = play(mode, 1000 + Number(process.argv[6] ?? 0) + g)
     if (r.s.phase === 'won') won++
     else reasons.push(r.s.result || r.s.phase)
     if (r.s.phase === 'play')
       console.log(`  [${mode}] не доиграно: решений ${r.decisions}, ждём ${JSON.stringify(r.s.pendings[0] ?? r.s.turn)}\n  ${r.s.log.slice(-4).join(' | ')}`)
     rounds += r.s.round
+    revealedSum += r.s.tiles.filter((x) => x.revealed).length / r.s.tiles.length
+    starved += r.s.players.filter((p) => p.exhausted || p.hunger >= 5).length
     iters += r.iters
     dec += r.decisions
   }
   console.log(`${mode.padEnd(6)} побед ${won}/${games}, раундов в среднем ${(rounds / games).toFixed(1)}, ` +
     `решений ${dec}${mode === 'mcts' ? `, розыгрышей на решение ${(iters / Math.max(1, dec)).toFixed(0)}` : ''}, ` +
+    `открыто ${Math.round((100 * revealedSum) / games)}%, голодных к концу ${starved}, ` +
     `${((Date.now() - t0) / 1000).toFixed(0)} с. Поражения: ${[...new Set(reasons)].join('; ')}`)
 }
