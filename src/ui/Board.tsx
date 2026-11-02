@@ -1,11 +1,12 @@
 // Поле: карту можно двигать (палец/мышь), приближать (щипок, колесо, кнопки +/−).
-// Положение камеры живёт в компоненте и не сбрасывается при перерисовке. Без CSS-анимаций.
+// Положение камеры живёт в компоненте и не сбрасывается при перерисовке. В начале хода камера плавно едет к игроку.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { assetUrl } from '../assets'
 import { tileDef } from '../game/core.ts'
 import type { GameState, XY } from '../game/types.ts'
 import { useImages } from './images'
 import { PLAYER_COLORS, playerIcon, useHoverPreview } from './common'
+import { BoardFloats, type Float } from './fx'
 
 const CELL = 128
 const PAD = 24
@@ -28,12 +29,15 @@ const readTall = () => {
   }
 }
 
-export default function Board({ s, highlight, selected, active, onTile }: {
+export default function Board({ s, highlight, selected, active, onTile, floats = [], follow }: {
   s: GameState
   highlight?: XY[]
   selected?: XY[]
   active?: XY
   onTile: (xy: XY) => void
+  floats?: Float[]
+  /** смена значения — камера плавно едет к активному игроку */
+  follow?: string
 }) {
   const img = useImages()
   const hover = useHoverPreview()
@@ -42,6 +46,7 @@ export default function Board({ s, highlight, selected, active, onTile }: {
   const viewRef = useRef(view)
   viewRef.current = view
   const [tall, setTall] = useState(readTall)
+  const [glide, setGlide] = useState(false)
 
   // Состояние приходит новой копией после каждого действия — пересчитываем рамку только при смене набора тайлов
   const tilesKey = s.tiles.map((t) => `${t.x},${t.y}`).join(';')
@@ -70,7 +75,9 @@ export default function Board({ s, highlight, selected, active, onTile }: {
     setView({ k, x: (w - box.pw * k) / 2, y: (h - box.ph * k) / 2 })
   }, [box, fitK])
 
-  const centerOn = (xy: XY, k = Math.max(viewRef.current.k, 0.9)) => {
+  const centerOn = (xy: XY, k = Math.max(viewRef.current.k, 0.9), smooth = false) => {
+    setGlide(smooth)
+    if (smooth) setTimeout(() => setGlide(false), 700)
     const { w, h } = size()
     const cx = PAD + (xy.x - box.minX + 0.5) * CELL
     const cy = PAD + (xy.y - box.minY + 0.5) * CELL
@@ -110,6 +117,19 @@ export default function Board({ s, highlight, selected, active, onTile }: {
     return () => ro.disconnect()
   }, [fit])
 
+  // Новый ход — плавно к игроку (масштаб тот же; если поле целиком влезает — не трогаем)
+  const followRef = useRef(follow)
+  useEffect(() => {
+    if (follow === followRef.current) return
+    followRef.current = follow
+    if (!active || pts.current.size) return
+    const { w, h } = size()
+    const k = viewRef.current.k
+    if (box.pw * k <= w && box.ph * k <= h) return
+    centerOn(active, k, true)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [follow])
+
   // Колесо мыши: нужен не-пассивный слушатель, чтобы не прокручивалась страница
   useEffect(() => {
     const el = vp.current
@@ -142,6 +162,7 @@ export default function Board({ s, highlight, selected, active, onTile }: {
     }
   }
   const onDown = (e: PointerEvent) => {
+    setGlide(false)
     pts.current.set(e.pointerId, local(e))
     if (pts.current.size === 1) g.current.moved = false
     restart()
@@ -191,10 +212,9 @@ export default function Board({ s, highlight, selected, active, onTile }: {
   return (
     <div className={`board-vp ${tall ? 'tall' : ''}`} ref={vp} style={{ backgroundImage: `url(${assetUrl('assets/ui/bg-board.png')})` }}
       onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
-      <div className="board" style={{ width: box.pw, height: box.ph, transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})` }}>
+      <div className={`board ${glide ? 'glide' : ''}`} style={{ width: box.pw, height: box.ph, transform: `translate(${view.x}px, ${view.y}px) scale(${view.k})` }}>
         {s.tiles.map((t) => {
           const d = tileDef(t)
-          const here = s.players.filter((p) => p.alive && p.pos.x === t.x && p.pos.y === t.y)
           const dropped = s.dropped.some((x) => x.x === t.x && x.y === t.y)
           const src = t.revealed ? img.face(d.image) : img.back(d.image)
           const cls = ['tile', t.revealed ? 'open' : 'closed', has(highlight, t) && 'hl', has(selected, t) && 'sel', active && active.x === t.x && active.y === t.y && 'act']
@@ -206,7 +226,7 @@ export default function Board({ s, highlight, selected, active, onTile }: {
               onClick={() => !g.current.moved && onTile({ x: t.x, y: t.y })}
               {...(t.revealed && pts.current.size === 0 ? hover(img.face(d.image), d.name, d.text) : {})}
             >
-              {src && <img src={src} alt="" draggable={false} />}
+              {src && <img key={src} className="tface" src={src} alt="" draggable={false} style={{ animationDelay: `${(t.x - box.minX + t.y - box.minY) * 45}ms` }} />}
               {t.markers > 0 && (
                 <span className="tmarkers">
                   {Array.from({ length: t.markers }, (_, i) => (
@@ -221,15 +241,22 @@ export default function Board({ s, highlight, selected, active, onTile }: {
                 </span>
               )}
               {dropped && <span className="tdrop">📦</span>}
-              <span className="tokens">
-                {here.map((p) => (
-                  <img key={p.seat} src={playerIcon(p, img.face).src} alt={p.name} draggable={false}
-                    style={{ borderColor: PLAYER_COLORS[p.seat], objectPosition: playerIcon(p, img.face).pos }} />
-                ))}
-              </span>
             </button>
           )
         })}
+        {/* Фигурки — отдельным слоем, чтобы плавно переезжать между тайлами */}
+        {s.players.filter((p) => p.alive).map((p) => {
+          const here = s.players.filter((q) => q.alive && q.pos.x === p.pos.x && q.pos.y === p.pos.y)
+          const i = here.indexOf(p)
+          const ic = playerIcon(p, img.face)
+          const me = active && s.turn.seat === p.seat
+          return (
+            <img key={p.seat} className={`pfig ${me ? 'me' : ''}`} src={ic.src} alt={p.name} draggable={false}
+              style={{ left: PAD + (p.pos.x - box.minX) * CELL + 4 + i * 36, top: PAD + (p.pos.y - box.minY + 1) * CELL - 56,
+                borderColor: PLAYER_COLORS[p.seat], objectPosition: ic.pos, ['--pc' as string]: PLAYER_COLORS[p.seat] }} />
+          )
+        })}
+        <BoardFloats floats={floats} cell={CELL} pad={PAD} minX={box.minX} minY={box.minY} k={view.k} />
       </div>
 
       <div className="board-ctrl" onPointerDown={(e) => e.stopPropagation()}>
@@ -243,7 +270,7 @@ export default function Board({ s, highlight, selected, active, onTile }: {
           ⤢
         </button>
         {active && (
-          <button className="btn small" onClick={() => centerOn(active)} aria-label="К персонажу" title="К персонажу">
+          <button className="btn small" onClick={() => centerOn(active, undefined, true)} aria-label="К персонажу" title="К персонажу">
             ◎
           </button>
         )}

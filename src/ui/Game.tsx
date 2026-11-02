@@ -12,6 +12,7 @@ import { useImages } from './images'
 import DesktopLayout, { useIsDesktop, type PanelDef } from './Layout'
 import PendingSheet from './PendingSheet'
 import { botToMove, useBots } from './useBots'
+import { FxLayer, readFx, saveFx, useFx } from './fx'
 import PlayerPanel, { HandView, type CardPlace } from './PlayerPanel'
 import type { GameStore } from './store'
 import { nextStep, tileName, WizardPanel, type WizardSpec } from './Wizard'
@@ -40,6 +41,8 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
   const desktop = useIsDesktop()
   const images = useImages()
   const [pickedTiles, setPickedTiles] = useState<XY[]>([])
+  const [fxOn, setFxOn] = useState(readFx)
+  const fx = useFx(s, fxOn)
 
   useEffect(() => {
     if (!toast) return
@@ -125,7 +128,7 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
     if (d.type === 'gear') return act({ type: 'play', seat, card: id }) && closeAll()
     effWizard(d.name, seat, d.effect ?? [], d.range, (params) => ({ type: 'play', seat, card: id, params }))
   }
-  const useGear = (id: string, seat: number) => {
+  const activateGear = (id: string, seat: number) => {
     const d = cardDef(id)
     effWizard(d.name, seat, d.gear!.action ?? [], d.range, (params) => ({ type: 'useGear', seat, equip: id, params }), { weapon: id })
   }
@@ -159,7 +162,7 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
 
   const centerNode = (
     <>
-      <Board s={s} active={actor.pos} highlight={tileStep?.cands} selected={tileStep?.kind === 'tiles' ? pickedTiles : undefined} onTile={onTile} />
+      <Board s={s} active={actor.pos} floats={fx.floats} follow={`${s.round}:${s.turn.seat}`} highlight={tileStep?.cands} selected={tileStep?.kind === 'tiles' ? pickedTiles : undefined} onTile={onTile} />
 
       <div className="last-log">{s.log[s.log.length - 1]}</div>
 
@@ -242,7 +245,7 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
   )
 
   return (
-    <div className="game">
+    <div className={`game ${fx.hurt ? 'shake' + (fx.hurt % 2) : ''}`}>
       <header className="ghead">
         <button className="btn small" onClick={onMenu} aria-label="Меню">
           ☰
@@ -258,6 +261,13 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
             {s.turn.lent && <> · действует {actor.name}</>}
           </span>
         </div>
+        <button className={`btn small fxbtn ${fxOn ? '' : 'off'}`} title={fxOn ? 'Анимации включены' : 'Анимации выключены'} aria-label="Анимации"
+          onClick={() => {
+            saveFx(!fxOn)
+            setFxOn(!fxOn)
+          }}>
+          🎬
+        </button>
         <button className="btn small mob-only" onClick={() => setPanel('goal')}>
           Цель
         </button>
@@ -280,7 +290,7 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
 
       {card && !wizard && (
         <CardSheet s={s} card={card} actorSeat={actorSeat} onClose={() => setCard(null)}
-          onPlay={() => playCard(card.id, card.seat)} onUse={() => useGear(card.id, card.seat)}
+          onPlay={() => playCard(card.id, card.seat)} onUse={() => activateGear(card.id, card.seat)}
           onDiscard={() => discardGear(card.id, card.seat)}
           onDeliver={() => act({ type: 'deliver', seat: card.seat, card: card.id }) && closeAll()}
           onRefuel={(fuel) => act({ type: 'refuel', seat: card.seat, equip: card.id, fuel }) && closeAll()} />
@@ -349,15 +359,29 @@ export default function Game({ store, onMenu, net }: { store: GameStore; onMenu:
 
       {(s.phase === 'won' || s.phase === 'lost') && (
         <div className={`gameover ${s.phase}`}>
+          <div className="go-bar top" />
+          <div className="go-bar bottom" />
+          <small className="go-kicker">{mission.name}</small>
           <h1>{s.phase === 'won' ? 'Победа!' : 'Поражение'}</h1>
           <p>{s.result}</p>
+          <div className="go-squad">
+            {s.players.map((p) => (
+              <div key={p.seat} className={`go-member ${p.alive ? '' : 'dead'}`} style={{ borderColor: PLAYER_COLORS[p.seat] }}>
+                <img src={playerIcon(p, images.face).src} alt="" style={{ objectPosition: playerIcon(p, images.face).pos }} />
+                <span>{p.name}</span>
+                <small>{p.alive ? 'выжил' : 'погиб'}</small>
+              </div>
+            ))}
+          </div>
+          <p className="go-stats">Раундов: {s.round}</p>
           <button className="btn primary" onClick={onMenu}>
             В меню
           </button>
         </div>
       )}
 
-      {toast && <div className="toast">{toast}</div>}
+      {s.phase === 'play' && <FxLayer s={s} fx={fx} />}
+      {toast && <div key={toast} className="toast">{toast}</div>}
     </div>
   )
 }

@@ -444,9 +444,13 @@ function choose(s: GameState, a: Extract<Action, { type: 'choose' }>) {
         }
         return void damagePlayer(s, p, pd.data!.amount as number, 'effect')
       }
-      case 'loseGear':
-        needOpt(p.equip.length)
-        return void unequip(s, p, p.equip[opt!].id)
+      case 'loseGear': {
+        // снаряжение могло пропасть, пока ждали ответа: тогда сбрасывать нечего
+        if (!p.equip.length) return
+        needOpt(pd.options?.length ?? p.equip.length)
+        const named = p.equip.find((x) => cardDef(x.id).name === pd.options?.[opt!])
+        return void unequip(s, p, (named ?? p.equip[Math.min(opt!, p.equip.length - 1)]).id)
+      }
       case 'fuel': {
         const codes = (pd.data!.codes as string[] | undefined) ?? ['equip', 'discard']
         needOpt(codes.length)

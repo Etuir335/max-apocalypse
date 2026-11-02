@@ -73,7 +73,7 @@ export default function PlayerPanel({ s, p, onCard, withHand = true }: {
           {f.immune ? ' 🛡' : ''}
         </span>
       ))}
-      <span>👁 скрытность {stealthOf(p)}</span>
+      <span>👁 скрытность {Number.isFinite(stealthOf(p)) ? stealthOf(p) : '—'}</span>
       <span>🍖 {p.exhausted ? 'истощён' : `голод ${p.hunger}/6`}</span>
       {p.poison > 0 && <span className="bad">☣ яд {p.poison}</span>}
       <span>

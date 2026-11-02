@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { decider } from '../ai/legal.ts'
 import { think, type Level } from '../ai/mcts.ts'
 import type { Action, GameState } from '../game/types.ts'
+import { fxClock } from './fx'
 
 const MIN_DELAY = 650 // чтобы люди успевали следить за ходами бота
 
@@ -59,9 +60,11 @@ export function useBots(s: GameState | null, dispatch: (a: Action) => string | u
 
     const apply = (action: Action | null) => {
       if (cancelled) return
-      const wait = Math.max(0, MIN_DELAY - (Date.now() - started))
+      // ждём и паузу, и конец заставки (кости, босс, гибель)
+      const wait = Math.max(0, MIN_DELAY - (Date.now() - started), fxClock.until - Date.now())
       setTimeout(() => {
         if (cancelled) return
+        if (fxClock.until > Date.now() + 50) return apply(action)
         if (action && !dispatch(action)) return
         for (const a of fallbacks(s, seat)) if (!dispatch(a)) return
       }, wait)

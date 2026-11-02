@@ -77,12 +77,12 @@ export const DIRS: XY[] = [
 export const neighbors = (s: GameState, p: XY) =>
   DIRS.map((d) => tileAt(s, { x: p.x + d.x, y: p.y + d.y })).filter((t): t is TileInst => !!t)
 
-/** Короткая — свой тайл; средняя — свой и ортогональные соседи; дальняя — 1–2 шага (с диагональю), но не свой. */
+/** Короткая — свой тайл; средняя — свой и ортогональные соседи; дальняя — свой и до 2 шагов (с диагональю). */
 export function inRange(from: XY, to: XY, range: Range): boolean {
   const d = dist(from, to)
   if (range === 'short') return d === 0
   if (range === 'medium') return d <= 1
-  return d >= 1 && d <= 2
+  return d <= 2
 }
 export const tilesInRange = (s: GameState, from: XY, range: Range) => s.tiles.filter((t) => inRange(from, t, range))
 
